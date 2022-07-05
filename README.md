@@ -11,18 +11,18 @@ Dockerfile adapted from Tensorflow
 # Usage
 
 
-`git clone https://github.com/aperkins19/Docker_GPU_python_datascience_jupyter_bespoke_packages.git`
+`git clone https://https://github.com/aperkins19/AP_AL_TXTL.git`
 
 ## Define Python Packages in requirements.txt
 
 ## Build Image
 
 
-`docker build -t python_gpu .`
+`docker build -t AL_TXTL_python_gpu .`
 
 
 ## Run Container
 
 
-`docker run -p 8883:8888 --gpus all  -v "%CD%":/src --name python_gpu python_gpu`
+`docker run -p 8883:8888 --gpus all  -v "%CD%":/src --name AL_TXTL_python_gpu AL_TXTL_python_gpu`
 
