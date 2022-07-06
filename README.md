@@ -1,3 +1,9 @@
+# Intro
+
+ This is an active learning implementation for optimising CFPS based on Borkowski 2020.
+
+
+
 # Docker for Python and Jupyter with GPU-leverage
 
 # Prerequisites
@@ -10,19 +16,22 @@ Dockerfile adapted from Tensorflow
 
 # Usage
 
-
-`git clone https://https://github.com/aperkins19/AP_AL_TXTL.git`
+```bash
+git clone https://https://github.com/aperkins19/AP_AL_TXTL.git
+```
 
 ## Define Python Packages in requirements.txt
 
 ## Build Image
 
-
-`docker build -t AL_TXTL_python_gpu .`
+```bash
+docker build -t al_txtl_python_gpu .
+```
 
 
 ## Run Container
 
-
-`docker run -p 8883:8888 --gpus all  -v "%CD%":/src --name AL_TXTL_python_gpu AL_TXTL_python_gpu`
+```bash
+docker run -p 8883:8888 --gpus all  -v "%CD%":/app --name al_txtl_python_gpu al_txtl_python_gpu
+```
 

@@ -1,4 +1,5 @@
-
+# Dockerfile 04/2021
+# Python environment for exporting data analysis for processing on remote systems. 
 ARG UBUNTU_VERSION=20.04
 
 ARG ARCH=
@@ -96,8 +97,8 @@ RUN jupyter serverextension enable --py jupyter_http_over_ws
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget git
 
-RUN mkdir src
-WORKDIR src/
+RUN mkdir app
+WORKDIR app/
 COPY . .
 
 RUN python3 -m pip install -r requirements.txt
@@ -108,4 +109,4 @@ EXPOSE 8888
 
 RUN python3 -m ipykernel.kernelspec
 
-CMD ["bash", "-c", "source /etc/bash.bashrc && jupyter notebook --notebook-dir=/src --ip 0.0.0.0 --no-browser --allow-root"]
+CMD ["bash", "-c", "source /etc/bash.bashrc && jupyter notebook --notebook-dir=/app --ip 0.0.0.0 --no-browser --allow-root"]
