@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy.integrate import odeint
 
 # Define helper Hill function
@@ -89,3 +90,43 @@ def solvePURE(TMAX, NSTEPS, initial_concs):
     sol = odeint(model, y0, time, args=(params,)) # Scipy solver
 
     return sol, time
+
+
+
+
+def Conduct_Modelling(proposed_grid_array, TargetSpecies, initial_concs_dict, TMAX, NSTEPS):
+    """"""
+    # make a df
+    proposed_grid_df = pd.DataFrame(proposed_grid_array, columns=TargetSpecies.keys())
+
+
+    # initialise an empty list to populate with protein concs and use to make the column
+    endpoint_protein_concentrations = []
+
+    # iterate over the compositions
+    for composition in proposed_grid_array:
+        
+        # Make a copy of the original array
+        original_concentrations = list(initial_concs_dict.values())
+        updated_concentrations = original_concentrations.copy()
+        
+        # iterate over each species in the array and update it
+        for new_conc, key in zip(composition, TargetSpecies):
+            
+            # get the array index from the dictionary
+            index = TargetSpecies[key]["initial_condition_vector_index"]
+            # UPDATE
+            updated_concentrations[index] = new_conc
+            
+        # conduct the modelling!
+        sol, time = solvePURE(TMAX, NSTEPS, updated_concentrations)
+        
+        # last time point and just get the polymerised protein at index 5
+        endpoint_protein_concentrations.append(sol[-1,:][5])
+    
+    # annotate the data
+    proposed_grid_df["Modelled Final Protein"] = endpoint_protein_concentrations
+
+    return proposed_grid_df, time
+
+

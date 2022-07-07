@@ -65,7 +65,7 @@ def generate_random_grid(array_to_avoid, max_concs_array, random_grid_size, NumO
     # build np array from list
     ALarray = np.array(accepted_sample_list)
 
-    return ALarray, array_to_avoid
+    return ALarray
 
 
 
@@ -130,11 +130,11 @@ def generate_initial_grid(grid_size, max_concs_array, PermissiblePercentagesOfMa
     random_grid_size = grid_size - high_and_low.shape[0]
 
     # generate random grid
-    randomgrid, array_to_avoid = generate_random_grid(array_to_avoid, max_concs_array, random_grid_size, NumOfTargetSpecies, PermissiblePercentagesOfMaxConcs);
+    randomgrid = generate_random_grid(array_to_avoid, max_concs_array, random_grid_size, NumOfTargetSpecies, PermissiblePercentagesOfMaxConcs);
 
     # now concatenate all the grids to produce the initial grid
     initialgrid = np.vstack((high_and_low, randomgrid))
 
     # finally multiply 
 
-    return initialgrid, array_to_avoid
+    return initialgrid
