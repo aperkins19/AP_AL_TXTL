@@ -104,7 +104,7 @@ initialgrid_modelled_df.to_csv(Grid_Path+"initial_grid_mM.csv", index=None)
 # Initialise the MasterGroundTruth with initial grid.
 initialgrid_modelled_df.to_csv(Grid_Path+"MasterGroundTruth.csv", index=None)
 
-
+mae_list = []
 
 for round_num in range(1, NUMBER_OF_ROUNDS):
 
@@ -156,7 +156,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 
     # Fit!
-    model.fit(x_train, y_train, epochs=50, validation_split=0.2)
+    model.fit(x_train, y_train, epochs=20, validation_split=0.2)
 
 
 
@@ -237,9 +237,11 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     # produces np array of 1D
     y_test = test_data["Modelled Final Protein"].values
 
-    results = model.evaluate(x_test, y_test, batch_size=128)
 
-    print(results)
+    # evaluate and save metric
+    results = model.evaluate(x_test, y_test, batch_size=128)
+    average_mae = results[1]
+    mae_list.append(average_mae)
 
 
 
@@ -273,3 +275,45 @@ if os.path.isdir(path) == False:
 os.chdir(path)
 
 plt.savefig("experiment_rounds_box_plots.png")
+
+
+
+
+###### mae list
+
+
+
+#Final plotting
+
+mae_df = pd.DataFrame({"Round #": range(0,19,1), "Average Mean Squared Error": mae_list})
+
+
+fig = plt.figure(figsize=(10,5))
+
+ax = sns.barplot(x="Round #", y="Average Mean Squared Error", data=mae_df)
+
+
+#ax.set_ylim(0,300)
+
+#fig.suptitle("RFUs of all experiments at "+ str(timepoint) + " mins")
+fig.tight_layout()
+
+
+##### Save fig
+
+
+path = "/app/datasets/plots/"
+
+# make directory for sticking the output in
+if os.path.isdir(path) == False:
+    os.mkdir(path, mode=0o777)
+    
+    
+#navigate to tidy_data_files
+os.chdir(path)
+
+plt.savefig("Average_Mean_Squared_Error_over_rounds.png")
+
+
+
+
