@@ -1,5 +1,26 @@
-from sunau import AUDIO_FILE_ENCODING_ALAW_8
+
 import numpy as np
+import pandas as pd
+
+
+
+def print_all_df(df):
+    # Permanently changes the pandas settings
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', -1)
+    
+    # All dataframes hereafter reflect these changes.
+    print(df)
+    
+    print('**RESET_OPTIONS**')
+    
+    # Resets the options
+    pd.reset_option('all')
+    
+
+
 
 def present_in_array(this_sample_conc, array_to_avoid):
 # Checks whether composition sample is already present in array
@@ -41,8 +62,13 @@ def generate_random_grid(array_to_avoid, max_concs_array, random_grid_size, NumO
         # Generate an array of size: 1 row and as many columns as the number of species.
         # populate it randomly selected conc %s
         this_sample = np.random.choice(PermissiblePercentagesOfMaxConcs, size=(1, NumOfTargetSpecies)).reshape(-1)
+        
+        
+        
+        
+        
         # convert to real concs
-        this_sample = np.multiply(this_sample, max_concs_array)
+        this_sample = np.multiply(this_sample, max_concs_array)###################################################################
 
         # ask if this sample is present in the array to ignore
         present, index = present_in_array(this_sample, array_to_avoid)
@@ -117,8 +143,15 @@ def generate_initial_grid(grid_size, max_concs_array, PermissiblePercentagesOfMa
     # we will pass this into to the random generator which will use it to ensure that compositions are not duplicated
     high_and_low = np.vstack((allmaxonelow, allminonehigh))
 
+
+
+
     # multiple columnwise with the max_concs_away
-    high_and_low = np.multiply(high_and_low, max_concs_array)
+    high_and_low = np.multiply(high_and_low, max_concs_array) #####################################################
+
+
+
+
 
     # initialise array to avoid with high_and_low
     array_to_avoid = high_and_low.copy()

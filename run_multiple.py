@@ -13,7 +13,7 @@ from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
+from sklearn.preprocessing import MinMaxScaler
 
 
 # Defining global parameters
@@ -95,8 +95,51 @@ initialgrid = generate_initial_grid(in_vitro_grid_size, max_concs_array, Permiss
 # Look at MavelliPURE.py for the function
 initialgrid_modelled_df, time = Conduct_Modelling(initialgrid, TargetSpecies, initial_concs_dict, TMAX, NSTEPS)
 
+print_all_df(initialgrid_modelled_df.head())
+#### Right this is the risky bit. Scaling the initialgrid_modelled_df ready for ML. Between 0-1.
+# I'm going to treat the reagents and product columns differently.
+# I'm going to divide each of the columns by their biggest number 
+
+# this should stay the same for the regents column but will change for the product column as the max gets bigger each round.. hopefully
+
+
+# now split
+X_ = initialgrid_modelled_df[list(TargetSpecies.keys())].copy()
+X_ = X_.to_numpy()
+
+Y_ = initialgrid_modelled_df["Modelled Final Protein"].copy()
+Y_ = Y_.to_numpy()
+
+
+# now transform.
+scaler = MinMaxScaler(feature_range=(0,1))
+X_ = scaler.fit_transform(X_)
+print("")
+print("print Y_ transformed")
+print(Y_.reshape(-1,1)[0:5,:])
+print("")
+Y_ = scaler.fit_transform(Y_.reshape(-1,1))
+print("")
+print("print Y_ transformed")
+print(Y_.reshape(-1,1)[0:5,:])
+print("")
+# add Y_ back column wise
+print("")
+print("print X_ transformed")
+print(X_[0:10,:])
+
+
+
+
+# get the column names and build df
+initialgrid_scaled_df = pd.DataFrame(X_Y_, columns=  list(TargetSpecies.keys())+["Modelled Final Protein"]  )
+
 # add the round #
 initialgrid_modelled_df['Round #'] = 0
+initialgrid_scaled_df['Round #'] = 0
+
+# save the scaled grid
+initialgrid_scaled_df.to_csv(Grid_Path+"MasterGroundTruth_scaled.csv", index=None)
 
 # save the initial grid
 initialgrid_modelled_df.to_csv(Grid_Path+"initial_grid_mM.csv", index=None)
@@ -104,13 +147,15 @@ initialgrid_modelled_df.to_csv(Grid_Path+"initial_grid_mM.csv", index=None)
 # Initialise the MasterGroundTruth with initial grid.
 initialgrid_modelled_df.to_csv(Grid_Path+"MasterGroundTruth.csv", index=None)
 
+
+
 mae_list = []
 
 for round_num in range(1, NUMBER_OF_ROUNDS):
 
 
     # read in master data set
-    Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"MasterGroundTruth.csv")
+    Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"MasterGroundTruth_scaled.csv")
 
     ######## Neural Networking
 
@@ -156,7 +201,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 
     # Fit!
-    model.fit(x_train, y_train, epochs=20, validation_split=0.2)
+    model.fit(x_train, y_train, epochs=50, validation_split=0.2)
 
 
 
