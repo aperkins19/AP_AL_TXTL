@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras.optimizers import Adam
 
 def define_model(input_nodes, num_output_nodes):
 
@@ -15,7 +16,7 @@ def define_model(input_nodes, num_output_nodes):
     ])
 
     
-    model.compile(optimizer='adam',
+    model.compile(optimizer=Adam(learning_rate=0.0001),
                 loss= "mse",
                 metrics=['mae'])
 

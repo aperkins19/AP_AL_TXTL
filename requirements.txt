@@ -4,5 +4,5 @@ scipy
 pandas
 keras
 tensorflow == 2.9.1
-
+scikit-learn == 1.1.1
 seaborn

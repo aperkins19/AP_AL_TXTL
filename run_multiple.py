@@ -1,5 +1,6 @@
 from scripts.grid_generators import *
 from scripts.neural_networks import *
+from scripts.data_scaler import *
 from models.MavelliPURE import *
 
 from tensorflow.keras.losses import MeanSquaredLogarithmicError
@@ -13,7 +14,7 @@ from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
+from sklearn.preprocessing import MinMaxScaler
 
 
 # Defining global parameters
@@ -95,14 +96,26 @@ initialgrid = generate_initial_grid(in_vitro_grid_size, max_concs_array, Permiss
 # Look at MavelliPURE.py for the function
 initialgrid_modelled_df, time = Conduct_Modelling(initialgrid, TargetSpecies, initial_concs_dict, TMAX, NSTEPS)
 
+
+#### Scale data for machine learning
+##### function in data.scaler.property
+
+# only scales the inputs between 0-1
+initialgrid_scaled_df = Initial_Scale_Data_Min_Max(initialgrid_modelled_df, 0, TargetSpecies)
+
 # add the round #
 initialgrid_modelled_df['Round #'] = 0
+
+# save the scaled grid
+initialgrid_scaled_df.to_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth_scaled.csv", index=None)
 
 # save the initial grid
 initialgrid_modelled_df.to_csv(Grid_Path+"initial_grid_mM.csv", index=None)
 
 # Initialise the MasterGroundTruth with initial grid.
-initialgrid_modelled_df.to_csv(Grid_Path+"MasterGroundTruth.csv", index=None)
+initialgrid_modelled_df.to_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth.csv", index=None)
+
+
 
 mae_list = []
 
@@ -110,10 +123,12 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 
     # read in master data set
-    Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"MasterGroundTruth.csv")
+    Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth_scaled.csv")
 
-    ######## Neural Networking
 
+
+
+    # Neural Networking
 
     ###### Divide data
 
@@ -126,8 +141,6 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     test_data = Current_Total_Ground_Truth_Df.iloc[:top_20_index, :].copy().reset_index(drop=True)
 
 
-
-
     ###### training
 
     # Select the input data using the TargetSpecies.keys
@@ -136,16 +149,6 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
     # produces np array of 1D
     y_train = train_data["Modelled Final Protein"].values
-    #y_train  = np.expand_dims(y_train, axis=1)
-
-    print("")
-    print("y_train")
-    print(y_train)
-
-    print("")
-    print("Shape of x_train")
-    print(x_train.shape)
-    print("")
 
     # defines the input and output nodes of the neural network based on the data shape
     input_nodes = len(TargetSpecies)
@@ -156,7 +159,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 
     # Fit!
-    model.fit(x_train, y_train, epochs=20, validation_split=0.2)
+    model.fit(x_train, y_train, epochs=50, validation_split=0.2)
 
 
 
@@ -165,20 +168,18 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     # this is the array of compositions that have already been sampled
     array_to_avoid = x_train
 
-    print("")
-    print("Shape of array_to_avoid")
-    print(array_to_avoid.shape)
-    print("")
-
+    # returns array of inputs of in vitro concs
     simulate_input = generate_random_grid(array_to_avoid, max_concs_array, in_silico_random_grid_size, NumOfTargetSpecies, PermissiblePercentagesOfMaxConcs)
 
+    # Scale down to 0-1
+    simulate_input_scaled = Just_Input_Scale_Data_Min_Max(simulate_input)
 
     # perform predictions and drop the extra dimension from the numpy object
-    predictions = model.predict(simulate_input).reshape(-1)
+    simulate_predictions = model.predict(simulate_input_scaled).reshape(-1)
 
     # construct Dataframe and annotate with predictions
     simulate_input_preds = pd.DataFrame(simulate_input, columns = TargetSpeciesKeys)
-    simulate_input_preds["Predicted Final Protein"] = predictions
+    simulate_input_preds["Predicted Final Protein"] = simulate_predictions
 
 
     # Sort predictions to get top predicted perfomers.
@@ -188,7 +189,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
     # get top performers and from the predictions - in vitro grid size.
     Top_performing_predictions = simulate_input_preds.iloc[:in_vitro_grid_size,:].copy()
-    
+
     #save
     Top_performing_predictions.to_csv(Grid_Path+"grid_round_"+str(round_num)+".csv", index=None)
 
@@ -201,21 +202,37 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
     Top_performing_predictions_array = Top_performing_predictions.to_numpy()
 
+
+    #### Scale back up to in vitro concs to conduct in silico modelling.
+    # multiple columnwise with the max_concs_away
+    Top_performing_predictions_array_concs = np.multiply(Top_performing_predictions_array, max_concs_array)
+
+
     ####### Conduct modelling!
-    Top_performing_preds_quantified, time = Conduct_Modelling(Top_performing_predictions_array, TargetSpecies, initial_concs_dict, TMAX, NSTEPS)
+    Top_performing_preds_quantified, time = Conduct_Modelling(Top_performing_predictions_array_concs, TargetSpecies, initial_concs_dict, TMAX, NSTEPS)
 
 
+
+    # now get scaled modelled preds
+    # get the modelled concentrations as a numpy array
+    preds_quantified_array = Top_performing_preds_quantified['Modelled Final Protein'].to_numpy().reshape(-1,1)
+
+    ## concatenate to the top performing 0-1 inputs
+    scaled_modelled_top_performers = np.hstack([Top_performing_predictions_array, preds_quantified_array])
+
+    scaled_modelled_top_performers = pd.DataFrame(scaled_modelled_top_performers, columns=  list(TargetSpecies.keys())+["Modelled Final Protein"])
     # add the round #
-    Top_performing_preds_quantified['Round #'] = round_num
+    scaled_modelled_top_performers['Round #'] = round_num
 
     # save the initial grid
-    Top_performing_preds_quantified.to_csv(Grid_Path+"Top_Performing_predictions_"+str(round_num)+".csv", index=None)
+    scaled_modelled_top_performers.to_csv(Grid_Path+"/Modelled_Predictions/Top_Performing_predictions_modelled_"+str(round_num)+".csv", index=None)
 
-    Current_Total_Ground_Truth_Df = pd.concat([Current_Total_Ground_Truth_Df, Top_performing_preds_quantified], axis=0)
+    #append to Master Ground Truth
+    Current_Total_Ground_Truth_Df = pd.concat([Current_Total_Ground_Truth_Df, scaled_modelled_top_performers], axis=0)
 
     print(Current_Total_Ground_Truth_Df.shape)
     # Initialise the MasterGroundTruth with initial grid.
-    Current_Total_Ground_Truth_Df.to_csv(Grid_Path+"MasterGroundTruth.csv", index=None)
+    Current_Total_Ground_Truth_Df.to_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth_scaled.csv", index=None)
 
     # Add this round of modelled compostions to array_to_avoid
     array_to_avoid = np.vstack([array_to_avoid,Top_performing_predictions_array])
@@ -247,7 +264,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 #Final plotting
 
-Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"MasterGroundTruth.csv")
+Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth_scaled.csv")
 
 
 fig = plt.figure(figsize=(10,5))
@@ -269,8 +286,8 @@ path = "/app/datasets/plots/"
 # make directory for sticking the output in
 if os.path.isdir(path) == False:
     os.mkdir(path, mode=0o777)
-    
-    
+
+
 #navigate to tidy_data_files
 os.chdir(path)
 
@@ -307,13 +324,9 @@ path = "/app/datasets/plots/"
 # make directory for sticking the output in
 if os.path.isdir(path) == False:
     os.mkdir(path, mode=0o777)
-    
-    
+
+
 #navigate to tidy_data_files
 os.chdir(path)
 
 plt.savefig("Average_Mean_Squared_Error_over_rounds.png")
-
-
-
-
