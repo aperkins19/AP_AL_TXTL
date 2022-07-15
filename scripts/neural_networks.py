@@ -21,3 +21,12 @@ def define_model(input_nodes, num_output_nodes):
                 metrics=['mae'])
 
     return model
+
+
+def generate_MLP_ensemble():
+
+    """"Iterates over the """
+
+    MLP_ensemble = []
+
+    return MLP_ensemble
