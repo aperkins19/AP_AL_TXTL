@@ -140,6 +140,7 @@ def evaluate_model(proposed_plate_df, MLP_ensemble, TargetSpeciesKeys, round_num
 
     # plot
     plt.errorbar(x, y, xerr = x_err, fmt="o")
+    plt.plot(np.linspace(0,600,600), np.linspace(0,600,600),'-r')
     plt.xlabel("Predicted Mean")
     plt.ylabel("Modelled Final Protein")
 
