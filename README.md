@@ -1,3 +1,16 @@
+# Project notes
+
+MLP Ensemble implemented. But not fitting properly. Might be because the MinMax scaler is producing a recurring value. e.g. should be 0.4 but is 0.444444445.
+
+Could try total exploitation. or exploration to begin with followed by a pivot to exploitation.
+
+
+
+
+
+
+
+
 # Intro
 
  This is an active learning implementation for optimising CFPS based on Borkowski 2020.
