@@ -28,12 +28,12 @@ Grid_Path = "./datasets/grids/"
 Plot_Path = "./Plots/"
 
 
-NUMBER_OF_ROUNDS = 20
+NUMBER_OF_ROUNDS = 40
 
 
 # the grid size for each composition set to be passed into the model to simulate real data
 in_vitro_grid_size = 100
-exploitation_exploration_ratio = 0.7
+exploitation_exploration_ratio = 0.9
 exploitation_number = int(in_vitro_grid_size * exploitation_exploration_ratio)
 exploration_number = int(in_vitro_grid_size - exploitation_number)
 
@@ -129,6 +129,8 @@ mae_list = []
 
 for round_num in range(1, NUMBER_OF_ROUNDS):
 
+    print("Round #: "+str(round_num))
+
 
     # read in master data set
     Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth.csv")
@@ -164,6 +166,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     # produces np array of 1D
     y_train = train_data["Modelled Final Protein"].values
 
+
     # defines the input and output nodes of the neural network based on the data shape
     input_nodes = len(TargetSpecies)
     num_output_nodes = 1
@@ -176,7 +179,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     for model in MLP_ensemble:
 
         # Fit!
-        model.fit(x_train, y_train, epochs=20, validation_split=0.2)
+        model.fit(x_train, y_train, epochs=50, validation_split=0.2)
 
 
     # Evaluate all of the models and choose the best one
