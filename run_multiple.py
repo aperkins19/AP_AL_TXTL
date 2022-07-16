@@ -1,5 +1,6 @@
 from scripts.grid_generators import *
 from scripts.neural_networks import *
+from scripts.MLP_definitions import *
 from scripts.data_scaler import *
 from models.MavelliPURE import *
 
@@ -11,10 +12,14 @@ import pandas as pd
 import os
 from scipy.integrate import odeint
 
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import r2_score
+import sklearn
+
 
 
 # Defining global parameters
@@ -28,6 +33,10 @@ NUMBER_OF_ROUNDS = 20
 
 # the grid size for each composition set to be passed into the model to simulate real data
 in_vitro_grid_size = 100
+exploitation_exploration_ratio = 0.7
+exploitation_number = int(in_vitro_grid_size * exploitation_exploration_ratio)
+exploration_number = int(in_vitro_grid_size - exploitation_number)
+
 in_silico_random_grid_size = 1000
 
 # Modelling Parameters
@@ -65,6 +74,8 @@ TargetSpecies = {
 }
 
 
+TargetSpeciesKeys = list(TargetSpecies.keys())
+
 # this list defines the fractions of the max concentrations of each species which are permissible.
 # e.g. 0.1 x 1500 mM =  150 mM
 PermissiblePercentagesOfMaxConcs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -91,23 +102,20 @@ NumOfTargetSpecies = len(TargetSpecies)
 
 initialgrid = generate_initial_grid(in_vitro_grid_size, max_concs_array, PermissiblePercentagesOfMaxConcs, NumOfTargetSpecies)
 
+initialgrid_modelled_df = pd.DataFrame(initialgrid, columns=TargetSpeciesKeys)
 
 # Conduct modelling
 # Look at MavelliPURE.py for the function
-initialgrid_modelled_df, time = Conduct_Modelling(initialgrid, TargetSpecies, initial_concs_dict, TMAX, NSTEPS)
+endpoint_protein_concentrations = Conduct_Modelling(initialgrid, TargetSpecies, initial_concs_dict, TMAX, NSTEPS)
+initialgrid_modelled_df["Modelled Final Protein"] = endpoint_protein_concentrations
 
 
 #### Scale data for machine learning
 ##### function in data.scaler.property
 
-# only scales the inputs between 0-1
-initialgrid_scaled_df = Initial_Scale_Data_Min_Max(initialgrid_modelled_df, 0, TargetSpecies)
 
 # add the round #
 initialgrid_modelled_df['Round #'] = 0
-
-# save the scaled grid
-initialgrid_scaled_df.to_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth_scaled.csv", index=None)
 
 # save the initial grid
 initialgrid_modelled_df.to_csv(Grid_Path+"initial_grid_mM.csv", index=None)
@@ -123,9 +131,16 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 
     # read in master data set
-    Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth_scaled.csv")
+    Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth.csv")
 
+    # do some basic trimming to get just inputs and outputs
+    Current_Total_Ground_Truth_Df_trimmed = Current_Total_Ground_Truth_Df[TargetSpeciesKeys+["Modelled Final Protein"]].copy()
 
+    #### Scale data for machine learning
+    ##### function in data.scaler.property
+
+    # only scales the inputs between 0-1
+    Current_Total_Ground_Truth_Df_scaled = Initial_Scale_Data_Min_Max(Current_Total_Ground_Truth_Df_trimmed, TargetSpecies)
 
 
     # Neural Networking
@@ -134,17 +149,16 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
     # separate evaluation test set. Top 20% of records. Which are then excluded from the training data
 
-    top_20_index = int(Current_Total_Ground_Truth_Df.shape[0] / 5)
+    top_20_index = int(Current_Total_Ground_Truth_Df_scaled.shape[0] / 5)
 
     # use the index to slice the dataframe
-    train_data = Current_Total_Ground_Truth_Df.iloc[top_20_index:,:].copy().reset_index(drop=True)
-    test_data = Current_Total_Ground_Truth_Df.iloc[:top_20_index, :].copy().reset_index(drop=True)
+    train_data = Current_Total_Ground_Truth_Df_scaled.iloc[top_20_index:,:].copy().reset_index(drop=True)
+    test_data = Current_Total_Ground_Truth_Df_scaled.iloc[:top_20_index, :].copy().reset_index(drop=True)
 
 
     ###### training
 
     # Select the input data using the TargetSpecies.keys
-    TargetSpeciesKeys = list(TargetSpecies.keys())
     x_train = train_data[TargetSpeciesKeys].values
 
     # produces np array of 1D
@@ -154,13 +168,38 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     input_nodes = len(TargetSpecies)
     num_output_nodes = 1
 
-    # Build the model - neural_networks.py for function and definiition
-    model = define_model(input_nodes, num_output_nodes)
+    # Build the ensemble of MLPs - neural_networks.py for function and definiition
+    MLP_ensemble = generate_MLP_ensemble(input_nodes, num_output_nodes, MLP_Settings_Dictionary)
 
 
-    # Fit!
-    model.fit(x_train, y_train, epochs=50, validation_split=0.2)
+    # iterate over and fit.
+    for model in MLP_ensemble:
 
+        # Fit!
+        model.fit(x_train, y_train, epochs=20, validation_split=0.2)
+
+
+    # Evaluate all of the models and choose the best one
+
+    # generate test data
+    x_test = test_data[TargetSpeciesKeys].values
+    y_test = test_data["Modelled Final Protein"].values
+
+
+    R2_Scores = []
+    for MLP in MLP_ensemble:
+
+        # calculate the y predictions for the current model using the x_test inputs
+        # compare them to the actual y_tests using the R squared metric.
+        # append said metric to the list
+        R2_Scores.append(sklearn.metrics.r2_score(y_test, MLP.predict(x_test)))
+
+
+
+    # get the index of the greatest R2 score and use it to index the best MLP in the ensemble.
+    # set it to "best MLP"
+
+    Best_MLP = MLP_ensemble[R2_Scores.index(max(R2_Scores))]
 
 
     ########## Simulate compositions
@@ -174,91 +213,106 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     # Scale down to 0-1
     simulate_input_scaled = Just_Input_Scale_Data_Min_Max(simulate_input)
 
+    # construct Dataframe and initialise with the actual compositons
+    # this will then be populated with the predictions for each model
+    Random_compositions_predictions_and_reality_DF = pd.DataFrame(simulate_input, columns = TargetSpeciesKeys)
+
+    ########################### Exploitation
+    # just do the best model first to get exploitation compositions
     # perform predictions and drop the extra dimension from the numpy object
-    simulate_predictions = model.predict(simulate_input_scaled).reshape(-1)
-
-    # construct Dataframe and annotate with predictions
-    simulate_input_preds = pd.DataFrame(simulate_input, columns = TargetSpeciesKeys)
-    simulate_input_preds["Predicted Final Protein"] = simulate_predictions
-
+    Best_simulate_predictions_array = Best_MLP.predict(simulate_input_scaled).reshape(-1)
+    # add 
+    Random_compositions_predictions_and_reality_DF["Pred for Best Model"] = Best_simulate_predictions_array
 
     # Sort predictions to get top predicted perfomers.
-    simulate_input_preds = simulate_input_preds.sort_values(by ='Predicted Final Protein', ascending=False)
-    simulate_input_preds.reset_index(drop=True, inplace=True)
+    Best_Simulated_Predictions = Random_compositions_predictions_and_reality_DF.sort_values(by ="Pred for Best Model", ascending=False).copy()
+    Best_Simulated_Predictions.reset_index(drop=True, inplace=True)
+
+    # get top performers and from the predictions - exploitation_number is number of compositions in the next set devoted to exploitation
+    Best_Simulated_Predictions = Best_Simulated_Predictions.iloc[:exploitation_number,:]
 
 
-    # get top performers and from the predictions - in vitro grid size.
-    Top_performing_predictions = simulate_input_preds.iloc[:in_vitro_grid_size,:].copy()
 
+
+    ############################ now for the exploration
+
+    # first I'm going to see what each model predicts for each train composition
+    # those predictions will be saved in the df column wise under the model's name
+    # the names will also be saved to make slicing easier later.
+
+
+    #### could use train?
+
+
+
+    model_name_list = []
+
+    Exploration_test_data_model_preds_df = pd.DataFrame(simulate_input, columns=TargetSpeciesKeys)
+
+    # iterate over and PREDICT!.
+    for model in MLP_ensemble:
+
+        # perform predictions and drop the extra dimension from the numpy object
+        test_simulated_predictions_array = model.predict(simulate_input_scaled).reshape(-1)
+
+        # get the model name and add to the list
+        model_name = "Pred for Model #: " + model.name
+        model_name_list.append(model_name)
+
+        # add 
+        Exploration_test_data_model_preds_df[model_name] = test_simulated_predictions_array
+
+    # Now generate the apparent difference between the predictions. Use the StdDeviation to begin with.
+    # add to the df under.....
+
+    Exploration_test_data_model_preds_df['Mean'] = Exploration_test_data_model_preds_df[model_name_list].mean(axis=1)
+    Exploration_test_data_model_preds_df['StdDev'] = Exploration_test_data_model_preds_df[model_name_list].std(axis=1)
+
+    # Sort df by STD to get the most undecided compositions
+    Exploration_test_data_model_preds_df = Exploration_test_data_model_preds_df.sort_values(by ="StdDev", ascending=False).copy()
+    Exploration_test_data_model_preds_df.reset_index(drop=True, inplace=True)
+
+    # get top performers and from the predictions - exploitation_number is number of compositions in the next set devoted to exploitation
+    Most_undecideded_Compositions = Exploration_test_data_model_preds_df.iloc[:exploration_number,:]
+
+
+    #### Now build the proposed_plate_df
+    Most_undecideded_Compositions_just_comps = Most_undecideded_Compositions[TargetSpeciesKeys]
+    Best_Simulated_Predictions_just_comps = Best_Simulated_Predictions[TargetSpeciesKeys]
+
+    # add the exploitation and exploration samples together and reset the index
+    proposed_plate_df = pd.concat([Best_Simulated_Predictions_just_comps, Most_undecideded_Compositions_just_comps], axis=0)
+    proposed_plate_df.reset_index(inplace=True, drop=True)
+
+    
     #save
-    Top_performing_predictions.to_csv(Grid_Path+"grid_round_"+str(round_num)+".csv", index=None)
-
-    Top_performing_predictions = Top_performing_predictions.drop("Predicted Final Protein", axis=1)
-
+    proposed_plate_df.to_csv(Grid_Path+"Proposed_Grid_for_round_"+str(round_num)+".csv", index=None)
 
     ############### Perform Modelling
 
-    ### prepare input data
-
-    Top_performing_predictions_array = Top_performing_predictions.to_numpy()
-
-
-    #### Scale back up to in vitro concs to conduct in silico modelling.
-    # multiple columnwise with the max_concs_away
-    Top_performing_predictions_array_concs = np.multiply(Top_performing_predictions_array, max_concs_array)
-
+    ### prepare input data. Produce NP Matrix
+    proposed_plate_matrix = proposed_plate_df.to_numpy()
 
     ####### Conduct modelling!
-    Top_performing_preds_quantified, time = Conduct_Modelling(Top_performing_predictions_array_concs, TargetSpecies, initial_concs_dict, TMAX, NSTEPS)
+    endpoint_protein_concentrations = Conduct_Modelling(proposed_plate_matrix, TargetSpecies, initial_concs_dict, TMAX, NSTEPS)
+    proposed_plate_df["Modelled Final Protein"] = endpoint_protein_concentrations
 
-
-
-    # now get scaled modelled preds
-    # get the modelled concentrations as a numpy array
-    preds_quantified_array = Top_performing_preds_quantified['Modelled Final Protein'].to_numpy().reshape(-1,1)
-
-    ## concatenate to the top performing 0-1 inputs
-    scaled_modelled_top_performers = np.hstack([Top_performing_predictions_array, preds_quantified_array])
-
-    scaled_modelled_top_performers = pd.DataFrame(scaled_modelled_top_performers, columns=  list(TargetSpecies.keys())+["Modelled Final Protein"])
     # add the round #
-    scaled_modelled_top_performers['Round #'] = round_num
+    proposed_plate_df['Round #'] = round_num
 
-    # save the initial grid
-    scaled_modelled_top_performers.to_csv(Grid_Path+"/Modelled_Predictions/Top_Performing_predictions_modelled_"+str(round_num)+".csv", index=None)
+
+    # Run the predictions on the proposed plate to generate the STD plots.
+    # Function in neural_networks.py
+    evaluate_model(proposed_plate_df, MLP_ensemble, TargetSpeciesKeys, round_num)
+
 
     #append to Master Ground Truth
-    Current_Total_Ground_Truth_Df = pd.concat([Current_Total_Ground_Truth_Df, scaled_modelled_top_performers], axis=0)
+    Current_Total_Ground_Truth_Df = pd.concat([Current_Total_Ground_Truth_Df, proposed_plate_df], axis=0)
 
-    print(Current_Total_Ground_Truth_Df.shape)
+
     # Initialise the MasterGroundTruth with initial grid.
-    Current_Total_Ground_Truth_Df.to_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth_scaled.csv", index=None)
+    Current_Total_Ground_Truth_Df.to_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth.csv", index=None)
 
-    # Add this round of modelled compostions to array_to_avoid
-    array_to_avoid = np.vstack([array_to_avoid,Top_performing_predictions_array])
-
-
-    ########## model evaluation
-
-    # use the index to slice the dataframe
-    test_data = Current_Total_Ground_Truth_Df.iloc[:top_20_index, :].copy()
-
-
-
-
-    ###### training
-
-    # Select the input data using the TargetSpecies.keys
-    x_test = test_data[TargetSpeciesKeys].values
-
-    # produces np array of 1D
-    y_test = test_data["Modelled Final Protein"].values
-
-
-    # evaluate and save metric
-    results = model.evaluate(x_test, y_test, batch_size=128)
-    average_mae = results[1]
-    mae_list.append(average_mae)
 
 
 
