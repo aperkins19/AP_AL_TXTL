@@ -11,7 +11,7 @@
 * DoE on initial exploration phase?
 
 
-
+* Optimise reaction velocity as well using a value which is a combination of maximum slope and timepoint. 
 
 
 
