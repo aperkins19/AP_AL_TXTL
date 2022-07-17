@@ -4,6 +4,12 @@ MLP Ensemble implemented. But not fitting properly. Might be because the MinMax 
 
 Could try total exploitation. or exploration to begin with followed by a pivot to exploitation.
 
+Need to design MLPs properly.
+
+Need to perform a hyperparameter sweep.
+
+Need to Produce final plots.
+
 
 
 
