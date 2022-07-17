@@ -6,7 +6,7 @@ import os
 
 def stripplot_over_rounds(df_path, save_path, plot_name):
 
-    Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth.csv")
+    Current_Total_Ground_Truth_Df = pd.read_csv(df_path)
 
 
     fig = plt.figure(figsize=(10,5))
@@ -37,6 +37,7 @@ def barplot_MAE_over_rounds(mae_list, save_path, plot_name):
 
     mae_df = pd.DataFrame({"Round #": range(0,len(mae_list),1), "Average Mean Squared Error": mae_list})
 
+    print(mae_df)
 
     fig = plt.figure(figsize=(10,5))
 

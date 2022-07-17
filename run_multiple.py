@@ -71,15 +71,17 @@ TargetSpecies = {
                      "tRNA" : {"Look_Up" : "T", "initial_condition_vector_index" : 6, "max_conc_mM" : 5},
                      "Amino Acids" : {"Look_Up" : "A", "initial_condition_vector_index" : 7, "max_conc_mM" : 600},
                      "Creatine_Phosphate" : {"Look_Up" : "CP", "initial_condition_vector_index" : 8, "max_conc_mM" : 5000},
+                     "Pyrophosphate" : {"Look_Up" : "Ppi", "initial_condition_vector_index" : 4, "max_conc_mM" : 1},
+                     "Creatine" : {"Look_Up" : "C", "initial_condition_vector_index" : 9, "max_conc_mM" : 1},
                      "TL Enzymes" : {"Look_Up" : "CTL", "initial_condition_vector_index" : 10, "max_conc_mM" : 6}
 }
 
 
-TargetSpeciesKeys = list(TargetSpecies.keys())
+TargetSpeciesKeys = list(TargetSpecies.keys())  
 
 # this list defines the fractions of the max concentrations of each species which are permissible.
 # e.g. 0.1 x 1500 mM =  150 mM
-PermissiblePercentagesOfMaxConcs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+PermissiblePercentagesOfMaxConcs = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 #PermissiblePercentagesOfMaxConcs = np.arange(start=0.1, stop=10, step=0.1)
 
 # iterate over TargetSpecies and store that max concs in a list which is converted to a np.array
@@ -327,35 +329,4 @@ stripplot_over_rounds("./datasets/grids/Ground_Truths/MasterGroundTruth.csv", "/
 
 ###### mae list
 
-
-
-#Final plotting
-
-mae_df = pd.DataFrame({"Round #": range(0,19,1), "Average Mean Squared Error": mae_list})
-
-
-fig = plt.figure(figsize=(10,5))
-
-ax = sns.barplot(x="Round #", y="Average Mean Squared Error", data=mae_df)
-
-
-#ax.set_ylim(0,300)
-
-#fig.suptitle("RFUs of all experiments at "+ str(timepoint) + " mins")
-fig.tight_layout()
-
-
-##### Save fig
-
-
-path = "/app/datasets/plots/"
-
-# make directory for sticking the output in
-if os.path.isdir(path) == False:
-    os.mkdir(path, mode=0o777)
-
-
-#navigate to tidy_data_files
-os.chdir(path)
-
-plt.savefig("Average_Mean_Squared_Error_over_rounds.png")
+#barplot_MAE_over_rounds(mae_list, "/app/datasets/plots/", "Average_Mean_Squared_Error_over_rounds.png")
