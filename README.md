@@ -1,12 +1,11 @@
 # Project notes
 
-* MLP Ensemble implemented. But not fitting properly. Might be because the MinMax scaler is producing a recurring value. e.g. should be 0.4 but is 0.444444445.
 
-* Need to design MLPs properly.
+* Design MLPs.
 
-* Need to perform a hyperparameter sweep.
+* Perform a hyperparameter sweep.
 
-* Need to Produce final plots.
+* Produce final plots.
 
 * Could try total exploitation. or exploration to begin with followed by a pivot to exploitation.
 * DoE on initial exploration phase?
