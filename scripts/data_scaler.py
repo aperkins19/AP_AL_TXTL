@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 
-def Initial_Scale_Data_Min_Max(freshly_modelled_df, round_num, TargetSpecies):
+def Initial_Scale_Data_Min_Max(freshly_modelled_df, TargetSpecies):
     """This function takes in a freshly modelled df, separates the inputs from the outputs. scales both column wise to between 0-1.
      Reassembles the df and adds a round # column. Returns df"""
 
@@ -33,9 +33,6 @@ def Initial_Scale_Data_Min_Max(freshly_modelled_df, round_num, TargetSpecies):
 
     # get the column names and build df
     newly_scaled_df = pd.DataFrame(X_Y_, columns=  list(TargetSpecies.keys())+["Modelled Final Protein"]  )
-
-    # add the round #
-    newly_scaled_df['Round #'] = round_num
 
     return newly_scaled_df
 

@@ -95,10 +95,7 @@ def solvePURE(TMAX, NSTEPS, initial_concs):
 
 
 def Conduct_Modelling(proposed_grid_array, TargetSpecies, initial_concs_dict, TMAX, NSTEPS):
-    """"""
-    # make a df
-    proposed_grid_df = pd.DataFrame(proposed_grid_array, columns=TargetSpecies.keys())
-
+    """  Iterates over the rows in the matrix and uses the compositions to update the inital concs. Then solves the model and returns a list of endpoint protein concentrations"""
 
     # initialise an empty list to populate with protein concs and use to make the column
     endpoint_protein_concentrations = []
@@ -124,9 +121,8 @@ def Conduct_Modelling(proposed_grid_array, TargetSpecies, initial_concs_dict, TM
         # last time point and just get the polymerised protein at index 5
         endpoint_protein_concentrations.append(sol[-1,:][5])
     
-    # annotate the data
-    proposed_grid_df["Modelled Final Protein"] = endpoint_protein_concentrations
 
-    return proposed_grid_df, time
+
+    return endpoint_protein_concentrations
 
 

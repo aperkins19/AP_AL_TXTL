@@ -1,3 +1,20 @@
+# Project notes
+
+
+* Design MLPs.
+
+* Perform a hyperparameter sweep.
+
+* Produce final plots.
+
+* Could try total exploitation. or exploration to begin with followed by a pivot to exploitation.
+* DoE on initial exploration phase?
+
+
+
+
+
+
 # Intro
 
  This is an active learning implementation for optimising CFPS based on Borkowski 2020.
