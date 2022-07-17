@@ -38,7 +38,7 @@ exploitation_exploration_ratio = 0.9
 exploitation_number = int(in_vitro_grid_size * exploitation_exploration_ratio)
 exploration_number = int(in_vitro_grid_size - exploitation_number)
 
-in_silico_random_grid_size = 1000
+in_silico_random_grid_size = 2000
 
 # Modelling Parameters
 
@@ -68,6 +68,8 @@ initial_concs_dict = dict(zip(keysVar, valuesVar))
 
 TargetSpecies = {
                      "NTP" : {"Look_Up": "NTP", "initial_condition_vector_index" : 0, "max_conc_mM" : 3000},
+                     "Polymerised Nucleotide" : {"Look_Up": "nt", "initial_condition_vector_index" : 3, "max_conc_mM" : 0.5},
+                     "Exhausted Nucleotide" : {"Look_Up": "NXP", "initial_condition_vector_index" : 2, "max_conc_mM" : 0.5},
                      "tRNA" : {"Look_Up" : "T", "initial_condition_vector_index" : 6, "max_conc_mM" : 5},
                      "Amino Acids" : {"Look_Up" : "A", "initial_condition_vector_index" : 7, "max_conc_mM" : 600},
                      "Creatine_Phosphate" : {"Look_Up" : "CP", "initial_condition_vector_index" : 8, "max_conc_mM" : 5000},
