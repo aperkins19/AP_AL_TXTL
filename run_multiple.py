@@ -1,6 +1,7 @@
 from scripts.grid_generators import *
 from scripts.neural_networks import *
 from scripts.MLP_definitions import *
+from scripts.plotting_functions import *
 from scripts.data_scaler import *
 from models.MavelliPURE import *
 
@@ -96,7 +97,7 @@ NumOfTargetSpecies = len(TargetSpecies)
 
 
 
-# Round 1 - Generating the initial grid
+# Round 0 - Generating the initial grid
 # Returns an initial grid and the array_to_avoid - the array of already tested compositions
 # Functions in the grid_generators.py script
 
@@ -321,36 +322,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 #Final plotting
 
-Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth.csv")
-
-
-fig = plt.figure(figsize=(10,5))
-
-ax = sns.boxplot(x="Round #", y="Modelled Final Protein", data=Current_Total_Ground_Truth_Df, whis=np.inf, width=0.3)
-ax = sns.stripplot(x="Round #", y="Modelled Final Protein", data=Current_Total_Ground_Truth_Df, color=".3")
-
-#ax.set_ylim(0,300)
-
-#fig.suptitle("RFUs of all experiments at "+ str(timepoint) + " mins")
-fig.tight_layout()
-
-
-##### Save fig
-
-
-path = "/app/datasets/plots/"
-
-# make directory for sticking the output in
-if os.path.isdir(path) == False:
-    os.mkdir(path, mode=0o777)
-
-
-#navigate to tidy_data_files
-os.chdir(path)
-
-plt.savefig("experiment_rounds_box_plots.png")
-
-
+stripplot_over_rounds("./datasets/grids/Ground_Truths/MasterGroundTruth.csv", "/app/datasets/plots/", "experiment_rounds_box_plots.png")
 
 
 ###### mae list
