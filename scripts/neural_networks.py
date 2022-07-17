@@ -141,10 +141,10 @@ def evaluate_model(proposed_plate_df, MLP_ensemble, TargetSpeciesKeys, round_num
     # plot
     plt.errorbar(x, y, xerr = x_err, fmt="o")
     plt.plot(np.linspace(0,600,600), np.linspace(0,600,600),'-r')
-    plt.xlabel("Predicted Mean")
-    plt.ylabel("Modelled Final Protein")
+    plt.xlabel("Mean of MLP Predictions of Final Protein Concentration (Error bars: STDDEV)")
+    plt.ylabel("Actual Final Protein Concentration")
 
-    fig.suptitle("MLP Performance @ Round "+str(round_num))
+    fig.suptitle("MLP Ensemble Performance vs Model @ Round "+str(round_num))
     fig.tight_layout()
 
 
