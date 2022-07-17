@@ -28,7 +28,7 @@ Grid_Path = "./datasets/grids/"
 Plot_Path = "./Plots/"
 
 
-NUMBER_OF_ROUNDS = 40
+NUMBER_OF_ROUNDS = 20
 
 
 # the grid size for each composition set to be passed into the model to simulate real data
@@ -289,7 +289,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
     
     #save
-    proposed_plate_df.to_csv(Grid_Path+"Proposed_Grid_for_round_"+str(round_num)+".csv", index=None)
+    proposed_plate_df.to_csv(Grid_Path+"/Proposed_Grids/Proposed_Grid_for_round_"+str(round_num)+".csv", index=None)
 
     ############### Perform Modelling
 
@@ -321,7 +321,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 #Final plotting
 
-Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth_scaled.csv")
+Current_Total_Ground_Truth_Df = pd.read_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth.csv")
 
 
 fig = plt.figure(figsize=(10,5))
