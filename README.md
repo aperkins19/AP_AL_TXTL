@@ -12,6 +12,7 @@
 
 
 * Optimise reaction velocity as well using a value which is a combination of maximum slope and timepoint. 
+* Need to look at initial sample. latin hypercube in combination with a little more rational choices
 
 * need to look at initial sampling strategy. - Draw cube and sample uniformly. - Latin Hypercube?
 
