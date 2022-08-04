@@ -78,6 +78,8 @@ docker run -p 8883:8888 -v $(pwd):/app --name al_txtl_python_gpu al_txtl_python_
 
 ## Enter the container
 
+You may have to open a new terminal window due to the Jupyter output but you can run the exec command below without navigating to the correct directory.
+
 ```bash
 docker exec -it al_txtl_python_gpu /bin/bash
 ```
