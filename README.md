@@ -18,7 +18,20 @@
 
  This is an active learning implementation for optimising CFPS based on Borkowski 2020.
 
+ An ensemble of 25 MLPs, the weights of each are initialised with a unique pseudo-random seed, are trained on **in silico** data from the course-grained Mavelli model of transcription and translation.
 
+ The trained MLPs then predict the yield of a large number of initial reaction compositions. The best performing compositions are then modelled to produce the **actual** yields.  
+
+ The new data is then concatenated to the master dataset and the MLPs are retrained.
+
+ 
+### Actual Protein Yields at each round: latest
+
+![Actual Protein Yields at each round](datasets/plots/experiment_rounds_box_plots.png)
+
+### Predicted vs Actual Protein Yields over rounds
+
+![Predicted vs Actual Protein Yields over rounds](datasets/plots/borokowski_recreation_performance_gif.gif)
 
 # Docker for Python and Jupyter with GPU-leverage
 
@@ -61,4 +74,17 @@ docker run -p 8883:8888 -v "%CD%":/app --name al_txtl_python_gpu al_txtl_python_
 
 ```bash
 docker run -p 8883:8888 -v $(pwd):/app --name al_txtl_python_gpu al_txtl_python_gpu
+```
+
+## Enter the container
+
+```bash
+docker exec -it al_txtl_python_gpu /bin/bash
+```
+
+
+## Run script
+
+```bash
+python run_multiple.py
 ```
