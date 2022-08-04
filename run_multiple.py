@@ -3,7 +3,10 @@ from scripts.neural_networks import *
 from scripts.MLP_definitions import *
 from scripts.plotting_functions import *
 from scripts.data_scaler import *
+
+
 from models.MavelliPURE import *
+from models.NiessPURE import *
 
 from tensorflow.keras.losses import MeanSquaredLogarithmicError
 
@@ -21,9 +24,11 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score
 import sklearn
 
-
+#Run_NiessPURE()
 
 # Defining global parameters
+
+Verbose_Toggle = False
 
 Grid_Path = "./datasets/grids/"
 Plot_Path = "./Plots/"
@@ -34,7 +39,7 @@ NUMBER_OF_ROUNDS = 20
 
 # the grid size for each composition set to be passed into the model to simulate real data
 in_vitro_grid_size = 100
-exploitation_exploration_ratio = 0.9
+exploitation_exploration_ratio = 0.8
 exploitation_number = int(in_vitro_grid_size * exploitation_exploration_ratio)
 exploration_number = int(in_vitro_grid_size - exploitation_number)
 
@@ -61,6 +66,8 @@ keysVar = ['NTP','NXP','nt','Ppi','ATr','a','T','A','CP','C','CTL']
 valuesVar = [1500,0,0,0,0,0,1.9,300,20000,0,2.2]
 
 initial_concs_dict = dict(zip(keysVar, valuesVar))
+
+
 
 
 
@@ -184,7 +191,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     for model in MLP_ensemble:
 
         # Fit!
-        model.fit(x_train, y_train, epochs=50, validation_split=0.2)
+        model.fit(x_train, y_train, epochs=50, validation_split=0.2, verbose = Verbose_Toggle)
 
 
     # Evaluate all of the models and choose the best one
@@ -261,7 +268,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     for model in MLP_ensemble:
 
         # perform predictions and drop the extra dimension from the numpy object
-        test_simulated_predictions_array = model.predict(simulate_input_scaled).reshape(-1)
+        test_simulated_predictions_array = model.predict(simulate_input_scaled, verbose = Verbose_Toggle).reshape(-1)
 
         # get the model name and add to the list
         model_name = "Pred for Model #: " + model.name
@@ -320,6 +327,22 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
     # Initialise the MasterGroundTruth with initial grid.
     Current_Total_Ground_Truth_Df.to_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth.csv", index=None)
+
+
+    # Increment the exploitation_exploration_ratio by 0.1
+    # Not used atm
+
+    #if exploitation_exploration_ratio >= 0.95:
+    #    exploitation_exploration_ratio = 1
+    #    print(" ")
+    #    print(" exploitation_exploration_ratio = "+ str(exploitation_exploration_ratio))
+
+    #else:
+    #    print(" ")
+    #    print(" Round number = "+ str(round_num))
+    #    print(" exploitation_exploration_ratio = "+ str(exploitation_exploration_ratio))
+    #
+    #    exploitation_exploration_ratio += 0.1
 
 
 
