@@ -16,6 +16,7 @@
 
 * need to look at initial sampling strategy. - Draw cube and sample uniformly. - Latin Hypercube?
 
+* Implement model performance metrics - each model mae or better over time as subplots - barplots or better?
 
 # Intro
 
