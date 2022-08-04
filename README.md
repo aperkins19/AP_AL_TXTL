@@ -85,7 +85,7 @@ docker exec -it al_txtl_python_gpu /bin/bash
 ```
 
 
-## Run script
+## Run the script
 
 ```bash
 python run_multiple.py
