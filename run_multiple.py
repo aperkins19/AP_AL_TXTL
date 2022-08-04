@@ -6,7 +6,7 @@ from scripts.data_scaler import *
 
 
 from models.MavelliPURE import *
-from models.NiessPURE import *
+#from models.NiessPURE import *
 
 from tensorflow.keras.losses import MeanSquaredLogarithmicError
 
@@ -24,18 +24,27 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score
 import sklearn
 
+import pymc3 as pm
+from pymc3 import HalfCauchy, Model, Normal, glm, plot_posterior_predictive_glm, sample
+
+import theano.tensor as T
+from theano import shared
+from theano.tensor.nlinalg import matrix_inverse
+
+print(f"Running on PyMC3 v{pm.__version__}")
+
 #Run_NiessPURE()
 
 # Defining global parameters
 
-Verbose_Toggle = False
-
 Grid_Path = "./datasets/grids/"
 Plot_Path = "./Plots/"
 
-
+Verbose_Toggle = False
 NUMBER_OF_ROUNDS = 20
 
+# appears to be 500 in NL implementation
+num_epochs = 30
 
 # the grid size for each composition set to be passed into the model to simulate real data
 in_vitro_grid_size = 100
@@ -74,15 +83,15 @@ initial_concs_dict = dict(zip(keysVar, valuesVar))
 # This dictionary defines the Species to be perturbed
 
 TargetSpecies = {
-                     "NTP" : {"Look_Up": "NTP", "initial_condition_vector_index" : 0, "max_conc_mM" : 3000},
-                     "Polymerised Nucleotide" : {"Look_Up": "nt", "initial_condition_vector_index" : 3, "max_conc_mM" : 0.5},
-                     "Exhausted Nucleotide" : {"Look_Up": "NXP", "initial_condition_vector_index" : 2, "max_conc_mM" : 0.5},
-                     "tRNA" : {"Look_Up" : "T", "initial_condition_vector_index" : 6, "max_conc_mM" : 5},
-                     "Amino Acids" : {"Look_Up" : "A", "initial_condition_vector_index" : 7, "max_conc_mM" : 600},
-                     "Creatine_Phosphate" : {"Look_Up" : "CP", "initial_condition_vector_index" : 8, "max_conc_mM" : 5000},
-                     "Pyrophosphate" : {"Look_Up" : "Ppi", "initial_condition_vector_index" : 4, "max_conc_mM" : 1},
-                     "Creatine" : {"Look_Up" : "C", "initial_condition_vector_index" : 9, "max_conc_mM" : 1},
-                     "TL Enzymes" : {"Look_Up" : "CTL", "initial_condition_vector_index" : 10, "max_conc_mM" : 6}
+                     "NTP"                      : {"Look_Up": "NTP", "initial_condition_vector_index" : 0, "max_conc_mM" : 3000},
+                     "Polymerised Nucleotide"   : {"Look_Up": "nt", "initial_condition_vector_index" : 3, "max_conc_mM" : 0.5},
+                     "Exhausted Nucleotide"     : {"Look_Up": "NXP", "initial_condition_vector_index" : 2, "max_conc_mM" : 0.5},
+                     "tRNA"                     : {"Look_Up" : "T", "initial_condition_vector_index" : 6, "max_conc_mM" : 5},
+                     "Amino Acids"              : {"Look_Up" : "A", "initial_condition_vector_index" : 7, "max_conc_mM" : 600},
+                     "Creatine_Phosphate"       : {"Look_Up" : "CP", "initial_condition_vector_index" : 8, "max_conc_mM" : 5000},
+                     "Pyrophosphate"            : {"Look_Up" : "Ppi", "initial_condition_vector_index" : 4, "max_conc_mM" : 1},
+                     "Creatine"                 : {"Look_Up" : "C", "initial_condition_vector_index" : 9, "max_conc_mM" : 1},
+                     "TL Enzymes"               : {"Look_Up" : "CTL", "initial_condition_vector_index" : 10, "max_conc_mM" : 6}
 }
 
 
@@ -191,7 +200,7 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     for model in MLP_ensemble:
 
         # Fit!
-        model.fit(x_train, y_train, epochs=50, validation_split=0.2, verbose = Verbose_Toggle)
+        model.fit(x_train, y_train, epochs = num_epochs, validation_split=0.2, verbose = Verbose_Toggle)
 
 
     # Evaluate all of the models and choose the best one
