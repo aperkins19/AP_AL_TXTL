@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 import os
+import random
 
 
 
@@ -47,6 +48,16 @@ def generate_MLP_ensemble(input_nodes, num_output_nodes, MLP_Settings_Dictionary
     # iterate over each MLP
     for MLP in MLP_Settings_Dictionary.keys():
 
+        print(MLP)
+
+        # This is where we define the random seed to initialise the weights for each MLP
+        # Retrieve the value from the hyperparams in each MLP definition 
+        seed_value = MLP_Settings_Dictionary[MLP]['HyperParams']["RandomSeed"]
+
+        os.environ['PYTHONHASHSEED']=str(seed_value)
+        random.seed(seed_value)
+        np.random.seed(seed_value)
+        tf.random.set_seed(seed_value)
 
         # initalise model
         model = keras.Sequential(name=str(MLP))
@@ -70,7 +81,10 @@ def generate_MLP_ensemble(input_nodes, num_output_nodes, MLP_Settings_Dictionary
             else:
 
                 # define the layer
-                model.add(keras.layers.Dense(MLP_Settings_Dictionary[MLP]["layers"][layer]["Hidden Nodes"], activation=MLP_Settings_Dictionary[MLP]["layers"][layer]["activation"]))
+                model.add(keras.layers.Dense(
+                    MLP_Settings_Dictionary[MLP]["layers"][layer]["Hidden Nodes"],
+                    activation=MLP_Settings_Dictionary[MLP]["layers"][layer]["activation"],
+                    ))
                 
                 
                 # if this layer has a dropout.......
@@ -82,6 +96,12 @@ def generate_MLP_ensemble(input_nodes, num_output_nodes, MLP_Settings_Dictionary
         model.compile(optimizer = Adam(learning_rate=MLP_Settings_Dictionary[MLP]['HyperParams']['learning_rate']),
                 loss= MLP_Settings_Dictionary[MLP]['HyperParams']['loss_function'],
                 metrics=[MLP_Settings_Dictionary[MLP]['HyperParams']['metrics']])
+        
+
+        #print("")
+        #print("MLP # "+MLP)
+        #print(model.weights)
+        #print("")
 
         # add the model to the list
         MLP_ensemble.append(model)  

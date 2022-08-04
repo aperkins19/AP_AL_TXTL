@@ -1,15 +1,9 @@
 # Project notes
 
 
-* Design MLPs.
-
-* Perform a hyperparameter sweep.
-
-* Produce final plots.
 
 * Could try total exploitation. or exploration to begin with followed by a pivot to exploitation.
 * DoE on initial exploration phase?
-
 
 * Optimise reaction velocity as well using a value which is a combination of maximum slope and timepoint. 
 * Need to look at initial sample. latin hypercube in combination with a little more rational choices
@@ -17,6 +11,8 @@
 * need to look at initial sampling strategy. - Draw cube and sample uniformly. - Latin Hypercube?
 
 * Implement model performance metrics - each model mae or better over time as subplots - barplots or better?
+
+* Implement callbacks, checkpoints and writing the model to disk
 
 # Intro
 

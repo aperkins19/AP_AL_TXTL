@@ -9,3 +9,13 @@ seaborn
 
 tellurium == 2.2.3.1
 mkdocs
+
+pymc3
+patsy
+lxml
+ipython
+pydot
+graphviz
+setuptools
+theano-pymc
+xlrd
