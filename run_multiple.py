@@ -41,7 +41,7 @@ Grid_Path = "./datasets/grids/"
 Plot_Path = "./Plots/"
 
 Verbose_Toggle = False
-NUMBER_OF_ROUNDS = 20
+NUMBER_OF_ROUNDS = 10
 
 # appears to be 500 in NL implementation
 num_epochs = 30
@@ -364,3 +364,18 @@ stripplot_over_rounds("./datasets/grids/Ground_Truths/MasterGroundTruth.csv", "/
 ###### mae list
 
 #barplot_MAE_over_rounds(mae_list, "/app/datasets/plots/", "Average_Mean_Squared_Error_over_rounds.png")
+
+###### save mae list
+print(mae_list[0])
+print(type(mae_list[0]))
+print(mae_list)
+print(mae_list[0])
+
+import csv
+
+def write_to_csv(Even_list):
+    with open('mae_list.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(Even_list)
+
+write_to_csv(mae_list)  
