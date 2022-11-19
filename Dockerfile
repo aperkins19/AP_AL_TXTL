@@ -60,6 +60,33 @@ RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/lib
     && ldconfig
 
 # See http://bugs.python.org/issue19846
+
+####### R
+
+# Overwrites the R installation questions 
+ENV DEBIAN_FRONTEND noninteractive
+
+# Specifies R version
+ENV R_BASE_VERSION=4.0.0
+
+# Updates Ubuntu
+RUN apt-get update && apt-get -y update && apt update
+# Installs tools to get the cran repository
+RUN apt install -y software-properties-common && apt update
+
+# Installs R
+RUN apt-get install -y gnupg2
+
+# This key specifies R version 4.2.
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+RUN add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/'
+RUN apt update
+# Installs R 
+RUN apt-get install -y --no-install-recommends build-essential r-base
+
+######### end R
+
+
 ENV LANG C.UTF-8
 
 RUN apt-get update && apt-get install -y \
@@ -101,7 +128,10 @@ RUN mkdir app
 WORKDIR app/
 COPY . .
 
-RUN python3 -m pip install -r requirements.txt
+RUN python3 -m pip install --no-cache-dir -r installation/python_requirements.txt
+
+# Runs the R script that handles the R Libraries installation
+RUN Rscript installation/install_dependencies.r
 
 RUN apt-get autoremove -y && apt-get remove -y wget
 
