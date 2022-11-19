@@ -1,0 +1,207 @@
+// libAntimony v2.9.4
+// Compartments and Species:
+species  Cgtp, Cgdp, Cgmp, Catp, Camp, Cribo70s, Cmrna, Cp, Cefg, Cefggdp, Cefggtp, Ceftu, Ceftugdp, Ceftugtp, Ct3, Cif, Cifgtp, Cribo30s, Cribo50s, Cr30SIF, Cr70SIC, CfmetT, Caa, Caat, Ct, Cpi, Cppi, Cutp, Cctp, Cump, Ccmp, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32
+
+// Reactions:
+// Equilibration of EFs with GTP
+_J1: Cefggdp -> Cefg + Cgdp; kfefg1*Cefggdp - krefg1*Cefg*Cgdp; 
+_J2: Cefg + Cgtp -> Cefggtp; kfefg2*Cefg*Cgtp - krefg2*Cefggtp;
+_J3: Ceftu + Cgtp -> Ceftugtp; kfeftu1*Ceftu*Cgtp - kreftu1*Ceftugtp;
+_J4: Ceftu + Cgdp -> Ceftugdp; kfeftu2*Ceftu*Cgdp - kreftu2*Ceftugdp;
+
+// Regeneration of EfTu-GTP
+_J5: Ceftugdp + Cgtp -> Ceftugtp + Cgdp; (keftsf*Ceftst)*(Ceftugdp*Cgtp - Cgdp*Ceftugtp/Keqeftu)/(Kmb*Ceftugdp+Kma*Cgtp+(keftsf*Ceftst)*Cgdp*Ceftugtp/((keftsr*Ceftst)*Keqeftu)+(keftsf*Ceftst)*Kmp*Ceftugtp/((keftsr*Ceftst)*Keqeftu)+(keftsf*Ceftst)*Kmq*Cgdp/((keftsr*Ceftst)*Keqeftu)+Ceftugdp*Cgtp+Kma*Cgtp*Ceftugtp/Kiq+(keftsf*Ceftst)*Kmq*Ceftugdp*Cgdp/((keftsr*Ceftst)*Keqeftu*Kia));
+
+// Aminoacylation 
+_J6: Caa + Ct + Catp -> Caat + Camp + Cppi; Vmaxars*1/(1+Kmarsaa/Caa+Kmarsatp/Catp+Kmarst/Ct);
+
+// Ternary complex formation
+_J7: Ceftugtp + Caat -> Ct3; kft3form*Ceftugtp*Caat - krt3form*Ct3;
+
+// Elongation for every codon
+_J8: C1 + Ct3 + Cefggtp -> C2 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C1/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J9: C2 + Ct3 + Cefggtp  -> C3 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C2/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J10: C3 + Ct3 + Cefggtp  -> C4 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C3/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J11: C4 + Ct3 + Cefggtp  -> C5 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C4/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J12: C5 + Ct3 + Cefggtp  -> C6 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C5/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J20: C6 + Ct3 + Cefggtp  -> C7 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C6/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J21: C7 + Ct3 + Cefggtp  -> C8 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C7/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J22: C8 + Ct3 + Cefggtp  -> C9 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C8/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J23: C9 + Ct3 + Cefggtp  -> C10 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C9/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J24: C10 + Ct3 + Cefggtp  -> C11 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C10/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J25: C11 + Ct3 + Cefggtp  -> C12 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C11/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J26: C12 + Ct3 + Cefggtp  -> C13 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C12/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J27: C13 + Ct3 + Cefggtp  -> C14 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C13/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J28: C14 + Ct3 + Cefggtp  -> C15 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C14/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J29: C15 + Ct3 + Cefggtp  -> C16 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C15/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J30: C16 + Ct3 + Cefggtp  -> C17 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C16/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J31: C17 + Ct3 + Cefggtp  -> C18 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C17/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J32: C18 + Ct3 + Cefggtp  -> C19 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C18/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J33: C19 + Ct3 + Cefggtp  -> C20 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C19/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J34: C20 + Ct3 + Cefggtp  -> C21 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C20/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J35: C21 + Ct3 + Cefggtp  -> C22 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C21/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J36: C22 + Ct3 + Cefggtp  -> C23 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C22/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J37: C23 + Ct3 + Cefggtp  -> C24 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C23/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J38: C24 + Ct3 + Cefggtp  -> C25 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C24/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J39: C25 + Ct3 + Cefggtp  -> C26 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C25/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J40: C26 + Ct3 + Cefggtp  -> C27 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C26/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J41: C27 + Ct3 + Cefggtp  -> C28 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C27/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J42: C28 + Ct3 + Cefggtp  -> C29 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C28/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J43: C29 + Ct3 + Cefggtp  -> C30 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C29/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J43: C29 + Ct3 + Cefggtp  -> C30 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C29/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J44: C30 + Ct3 + Cefggtp  -> C31 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C30/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+_J45: C31 + Ct3 + Cefggtp  -> C32 + Ceftugdp + Cefggdp + Ct + 2 Cpi; ktle*C31/(1+Kmt3/Ct3+Kmefggtp/Cefggtp); 
+
+
+// Termination
+_J13: C32 + Cgtp -> Cribo70s + Cmrna + Cp  + Cgdp + Cpi; ktlt*Crf/(1+Kmrk/C32+Kmgtp/Cgtp+Kmrk*Kmgtp/(C32*Cgtp)); // neglecting tRNA in P site
+
+// Ribosomal subunit association
+_J14: Cribo30s + Cribo50s -> Cribo70s; konribo*Cribo30s*Cribo50s;
+_J15: Cribo70s -> Cribo30s + Cribo50s; koffribo*Cribo70s;
+
+
+// Initiation:
+_J16: Cgtp + Cif -> Cifgtp; kon1*Cgtp*Cif; 
+_J16r: Cifgtp -> Cgtp + Cif; koff1*Cifgtp; 
+
+_J17: Cribo30s + Cifgtp -> Cr30SIF; kon2*Cribo30s*Cifgtp; 
+_J17r: Cr30SIF -> Cribo30s + Cifgtp; koff2*Cr30SIF; 
+
+_J18: Cr30SIF + CfmetT + Cmrna + Cribo50s -> Cr70SIC; kTLI70SIC*Cr30SIF/(1 + KmfmetT/CfmetT + Kmmrna/Cmrna + Km50s/Cribo50s + KmfmetT*Kmmrna/(CfmetT*Cmrna) );
+_J19: Cr70SIC -> C1 + Cif + Cgdp + Cpi; kTLIIF2D*Cr70SIC;
+
+
+// Transcription:
+_J46: 24 Catp + 24 Cgtp + 24 Cutp + 24 Cctp -> Cmrna + 96 Cppi; Vmaxtx/(1+Kmd/dt+24*(Kda/Catp)+24*(Kdg/Cgtp)+24*(Kdu/Cutp)+24*(Kdc/Cctp)) // Arnold form
+
+// mRNA degradation:
+_J47: Cmrna -> 24 Camp + 24 Cgmp + 24 Cump + 24 Ccmp; kmrnadeg*Cmrna; 
+
+
+// Species initializations:
+Cgtp = 0;
+Cgdp = 0;
+Cgmp = 0; 
+Catp = 0;
+Camp = 0; 
+Cribo70s = 0;
+Cmrna = 0;
+Cp = 0;
+Cefg = 31.9;
+Cefggdp = 0;
+Cefggtp = 1;
+Ceftu = 236.69;
+Ceftugdp = 0;
+Ceftugtp = 0;
+Ct3 = 1;
+Cif = 10; // approximate
+Cifgtp = 0;
+Cribo30S = 39.82;
+Cribo50S = 39.82
+Cr30SIF = 0;
+Cr70SIC = 0;
+CfmetT = 20.0;
+Caa = 1;
+Caat = 0;
+Ct = 0;
+Cpi = 0;
+Cppi = 0;
+Cutp = 0;
+Cctp = 0;
+Cump = 0;
+Ccmp = 0;
+C1 = 1;
+C2 = 0;
+C3 = 0;
+C4 = 0;
+C5 = 0;
+C6 = 0;
+C7 = 0;
+C8 = 0;
+C9 = 0;
+C10 = 0;
+C11 = 0;
+C12 = 0;
+C13 = 0;
+C14 = 0;
+C15 = 0;
+C16 = 0;
+C17 = 0;
+C18 = 0;
+C19 = 0;
+C20 = 0;
+C21 = 0;
+C22 = 0;
+C23 = 0;
+C24 = 0;
+C25 = 0;
+C26 = 0;
+C27 = 0;
+C28 = 0;
+C29 = 0;
+C30 = 0;
+C31 = 0;
+C32 = 0;
+
+
+// Parameter initializations:
+kfefg1 = 100; // s^-1
+krefg1 = 27; // uM^-1s^-1
+kfefg2 = 10; // uM^-1s^-1
+krefg2 = 100; // s^-1
+kfeftu1 = 0.2; // uM^-1s^-1 
+kreftu1 = 2.5e-2; // s^-1
+kfeftu2 = 0.9; // uM^-1s^-1
+kreftu2 = 1.7e-3; // s^-1
+
+keftsf = 30; // s^-1
+keftsr = 10; // s^-1
+Ceftst = 5; // uM
+Keqeftu = 0.19 
+Kma = 2.5; // uM
+Kmb = 50; // uM
+Kmp = 3; // uM
+Kmq = 1; // uM
+Kiq = 1; // uM
+Kia = 5.6; // uM
+
+Vmaxars = 5.95; //s^-1 per ribo
+Kmarsaa = 20; // uM
+Kmarsatp = 100; // uM
+Kmarst = 0.5; // uM
+
+kft3form = 50; // uM/s
+krt3form = 1; // s^-1
+
+ktle = 24; // aa/s
+Kmt3 = 0.4; // uM
+Kmefggtp = 0.22; // uM
+
+ktlt = 0.5; // s^-1
+Kmrk = 0.0083; // uM
+Kmgtp = 20; // uM
+Crf = 37.6; // uM
+
+konribo = 0.2385; // uM^-1s^-1, Hui Bon Hoa 77 + constraint of Ka=53 uM^-1 from Arnold
+koffribo = 4.5e-3; // s^-1
+
+kon1 = 1000; // uM^-1s^-1 # arbitrary
+koff1 = 1; //s^-1 # arbitrary
+kon2 = 80; // uM^-1s^-1 # arbitrary, can be adjusted to fit equilibrium behaviour of full system
+koff2 = 1; //s^-1 # assume constant arbitrary koff
+
+kTLI70SIC = 0.1 // s^-1 # slow
+KmfmetT = 0.05 // uM
+Kmmrna = 0.009 // uM
+Km50s = 0.012 // uM
+kTLIIF2D = 1.5 // s^-1
+
+Kmd = 0.0063 // uM
+Kda = 76 // uM
+Kdg = 76 // uM
+Kdu = 33 // uM
+Kdc = 34 // uM
+dt = 0.001 // uM
+Vmaxtx = 0.000865 // uM.s^-1
+kmrnadeg = 0.000138 // s^-1
