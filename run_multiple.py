@@ -10,28 +10,15 @@ from models.MavelliPURE import *
 
 from tensorflow.keras.losses import MeanSquaredLogarithmicError
 
-
 import numpy as np
 import pandas as pd
 import os
 from scipy.integrate import odeint
 
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score
 import sklearn
 
-import pymc3 as pm
-from pymc3 import HalfCauchy, Model, Normal, glm, plot_posterior_predictive_glm, sample
-
-import theano.tensor as T
-from theano import shared
-from theano.tensor.nlinalg import matrix_inverse
-
-print(f"Running on PyMC3 v{pm.__version__}")
 
 #Run_NiessPURE()
 
