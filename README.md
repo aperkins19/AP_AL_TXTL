@@ -54,7 +54,7 @@ git clone https://https://github.com/aperkins19/AP_AL_TXTL.git
 ## Build Image
 
 ```bash
-docker build -t al_txtl_python_gpu .
+docker build -t al_txtl_gpu .
 ```
 
 
@@ -63,17 +63,24 @@ docker build -t al_txtl_python_gpu .
 #### Windows:
 #### GPU
 ```bash
-docker run -p 8883:8888 --gpus all  -v "%CD%":/app --name al_txtl_python_gpu al_txtl_python_gpu
+docker run -p 8883:8888 --gpus all  -v "%CD%":/app --name al_txtl_gpu al_txtl_gpu
 ```
+
+#### Powershell
+
+```bash
+docker run -p 8883:8888 --gpus all  -v ${pwd}:/app --name al_txtl_gpu al_txtl_gpu
+```
+
 #### No GPU
 ```bash
-docker run -p 8883:8888 -v "%CD%":/app --name al_txtl_python_gpu al_txtl_python_gpu
+docker run -p 8883:8888 -v "%CD%":/app --name al_txtl_gpu al_txtl_gpu
 ```
 #### Linux:
 #### No GPU
 
 ```bash
-docker run -p 8883:8888 -v $(pwd):/app --name al_txtl_python_gpu al_txtl_python_gpu
+docker run -p 8883:8888 -v $(pwd):/app --name al_txtl_gpu al_txtl_gpu
 ```
 
 ## Enter the container
@@ -81,7 +88,7 @@ docker run -p 8883:8888 -v $(pwd):/app --name al_txtl_python_gpu al_txtl_python_
 You may have to open a new terminal window due to the Jupyter output but you can run the exec command below without navigating to the correct directory.
 
 ```bash
-docker exec -it al_txtl_python_gpu /bin/bash
+docker exec -it al_txtl_gpu /bin/bash
 ```
 
 
