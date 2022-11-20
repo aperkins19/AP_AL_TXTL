@@ -1,6 +1,6 @@
 from scripts.grid_generators import *
-from scripts.neural_networks import *
-from scripts.MLP_definitions import *
+from scripts.MLP.neural_networks import *
+#from scripts.MLP.MLP_definitions import *
 from scripts.plotting_functions import *
 from scripts.data_scaler import *
 
@@ -30,8 +30,17 @@ Plot_Path = "./Plots/"
 Verbose_Toggle = False
 NUMBER_OF_ROUNDS = 10
 
-# appears to be 500 in NL implementation
-num_epochs = 30
+
+AL_ENGINE = "MLP"
+
+
+
+if AL_ENGINE == "MLP":
+    # appears to be 500 in NL implementation
+    num_epochs = 30
+
+
+
 
 # the grid size for each composition set to be passed into the model to simulate real data
 in_vitro_grid_size = 100
@@ -81,8 +90,8 @@ TargetSpecies = {
                      "TL Enzymes"               : {"Look_Up" : "CTL", "initial_condition_vector_index" : 10, "max_conc_mM" : 6}
 }
 
-
 TargetSpeciesKeys = list(TargetSpecies.keys())  
+
 
 # this list defines the fractions of the max concentrations of each species which are permissible.
 # e.g. 0.1 x 1500 mM =  150 mM
@@ -132,9 +141,6 @@ initialgrid_modelled_df.to_csv(Grid_Path+"initial_grid_mM.csv", index=None)
 initialgrid_modelled_df.to_csv(Grid_Path+"/Ground_Truths/MasterGroundTruth.csv", index=None)
 
 
-
-mae_list = []
-
 for round_num in range(1, NUMBER_OF_ROUNDS):
 
     print("Round #: "+str(round_num))
@@ -170,47 +176,19 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
     # Select the input data using the TargetSpecies.keys
     x_train = train_data[TargetSpeciesKeys].values
-
     # produces np array of 1D
     y_train = train_data["Modelled Final Protein"].values
 
-
-    # defines the input and output nodes of the neural network based on the data shape
-    input_nodes = len(TargetSpecies)
-    num_output_nodes = 1
-
-    # Build the ensemble of MLPs - neural_networks.py for function and definiition
-    MLP_ensemble = generate_MLP_ensemble(input_nodes, num_output_nodes, MLP_Settings_Dictionary)
-
-
-    # iterate over and fit.
-    for model in MLP_ensemble:
-
-        # Fit!
-        model.fit(x_train, y_train, epochs = num_epochs, validation_split=0.2, verbose = Verbose_Toggle)
-
-
-    # Evaluate all of the models and choose the best one
 
     # generate test data
     x_test = test_data[TargetSpeciesKeys].values
     y_test = test_data["Modelled Final Protein"].values
 
+    #####################################################################################################################
+    if AL_ENGINE == "MLP":
+        Best_MLP, MLP_ensemble = build_and_train_MLP_ensemble(x_train, y_train, x_test, y_test, TargetSpecies, MLP_Settings_Dictionary, num_epochs, Verbose_Toggle)
 
-    R2_Scores = []
-    for MLP in MLP_ensemble:
-
-        # calculate the y predictions for the current model using the x_test inputs
-        # compare them to the actual y_tests using the R squared metric.
-        # append said metric to the list
-        R2_Scores.append(sklearn.metrics.r2_score(y_test, MLP.predict(x_test)))
-
-
-
-    # get the index of the greatest R2 score and use it to index the best MLP in the ensemble.
-    # set it to "best MLP"
-
-    Best_MLP = MLP_ensemble[R2_Scores.index(max(R2_Scores))]
+    #######################################################################################################
 
 
     ########## Simulate compositions
@@ -228,12 +206,22 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
     # this will then be populated with the predictions for each model
     Random_compositions_predictions_and_reality_DF = pd.DataFrame(simulate_input, columns = TargetSpeciesKeys)
 
+
+
+
+
+
+
+
+
     ########################### Exploitation
-    # just do the best model first to get exploitation compositions
-    # perform predictions and drop the extra dimension from the numpy object
-    Best_simulate_predictions_array = Best_MLP.predict(simulate_input_scaled).reshape(-1)
-    # add 
-    Random_compositions_predictions_and_reality_DF["Pred for Best Model"] = Best_simulate_predictions_array
+
+    if AL_ENGINE == "MLP":
+        # just do the best model first to get exploitation compositions
+        # perform predictions and drop the extra dimension from the numpy object
+        Best_simulate_predictions_array = Best_MLP.predict(simulate_input_scaled).reshape(-1)
+        # add 
+        Random_compositions_predictions_and_reality_DF["Pred for Best Model"] = Best_simulate_predictions_array
 
     # Sort predictions to get top predicted perfomers.
     Best_Simulated_Predictions = Random_compositions_predictions_and_reality_DF.sort_values(by ="Pred for Best Model", ascending=False).copy()
@@ -244,47 +232,44 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 
 
-
-    ############################ now for the exploration
+    ############################ Exploration
 
     # first I'm going to see what each model predicts for each train composition
     # those predictions will be saved in the df column wise under the model's name
     # the names will also be saved to make slicing easier later.
 
 
-    #### could use train?
-
-
-
-    model_name_list = []
-
     Exploration_test_data_model_preds_df = pd.DataFrame(simulate_input, columns=TargetSpeciesKeys)
 
-    # iterate over and PREDICT!.
-    for model in MLP_ensemble:
+    if AL_ENGINE == "MLP":
 
-        # perform predictions and drop the extra dimension from the numpy object
-        test_simulated_predictions_array = model.predict(simulate_input_scaled, verbose = Verbose_Toggle).reshape(-1)
+        model_name_list = []
 
-        # get the model name and add to the list
-        model_name = "Pred for Model #: " + model.name
-        model_name_list.append(model_name)
+        # iterate over and PREDICT!.
+        for model in MLP_ensemble:
 
-        # add 
-        Exploration_test_data_model_preds_df[model_name] = test_simulated_predictions_array
+            # perform predictions and drop the extra dimension from the numpy object
+            test_simulated_predictions_array = model.predict(simulate_input_scaled, verbose = Verbose_Toggle).reshape(-1)
 
-    # Now generate the apparent difference between the predictions. Use the StdDeviation to begin with.
-    # add to the df under.....
+            # get the model name and add to the list
+            model_name = "Pred for Model #: " + model.name
+            model_name_list.append(model_name)
 
-    Exploration_test_data_model_preds_df['Mean'] = Exploration_test_data_model_preds_df[model_name_list].mean(axis=1)
-    Exploration_test_data_model_preds_df['StdDev'] = Exploration_test_data_model_preds_df[model_name_list].std(axis=1)
+            # add 
+            Exploration_test_data_model_preds_df[model_name] = test_simulated_predictions_array
 
-    # Sort df by STD to get the most undecided compositions
-    Exploration_test_data_model_preds_df = Exploration_test_data_model_preds_df.sort_values(by ="StdDev", ascending=False).copy()
-    Exploration_test_data_model_preds_df.reset_index(drop=True, inplace=True)
+        # Now generate the apparent difference between the predictions. Use the StdDeviation to begin with.
+        # add to the df under.....
 
-    # get top performers and from the predictions - exploitation_number is number of compositions in the next set devoted to exploitation
-    Most_undecideded_Compositions = Exploration_test_data_model_preds_df.iloc[:exploration_number,:]
+        Exploration_test_data_model_preds_df['Mean'] = Exploration_test_data_model_preds_df[model_name_list].mean(axis=1)
+        Exploration_test_data_model_preds_df['StdDev'] = Exploration_test_data_model_preds_df[model_name_list].std(axis=1)
+
+        # Sort df by STD to get the most undecided compositions
+        Exploration_test_data_model_preds_df = Exploration_test_data_model_preds_df.sort_values(by ="StdDev", ascending=False).copy()
+        Exploration_test_data_model_preds_df.reset_index(drop=True, inplace=True)
+
+        # get top performers and from the predictions - exploitation_number is number of compositions in the next set devoted to exploitation
+        Most_undecideded_Compositions = Exploration_test_data_model_preds_df.iloc[:exploration_number,:]
 
 
     #### Now build the proposed_plate_df
@@ -347,22 +332,3 @@ for round_num in range(1, NUMBER_OF_ROUNDS):
 
 stripplot_over_rounds("./datasets/grids/Ground_Truths/MasterGroundTruth.csv", "/app/datasets/plots/", "experiment_rounds_box_plots.png")
 
-
-###### mae list
-
-#barplot_MAE_over_rounds(mae_list, "/app/datasets/plots/", "Average_Mean_Squared_Error_over_rounds.png")
-
-###### save mae list
-print(mae_list[0])
-print(type(mae_list[0]))
-print(mae_list)
-print(mae_list[0])
-
-import csv
-
-def write_to_csv(Even_list):
-    with open('mae_list.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(Even_list)
-
-write_to_csv(mae_list)  
