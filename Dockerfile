@@ -129,10 +129,10 @@ RUN mkdir app
 WORKDIR app/
 COPY . .
 
-#RUN python3 -m pip install --no-cache-dir -r installation/python_requirements.txt
+RUN python3 -m pip install --no-cache-dir -r installation/python_requirements.txt
 
 # Runs the R script that handles the R Libraries installation
-#RUN Rscript installation/install_dependencies.r
+RUN Rscript installation/install_dependencies.r
 
 
 ######### begin Julia
