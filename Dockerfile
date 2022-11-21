@@ -87,6 +87,7 @@ RUN apt-get install -y --no-install-recommends build-essential r-base
 ######### end R
 
 
+
 ENV LANG C.UTF-8
 
 RUN apt-get update && apt-get install -y \
@@ -128,10 +129,38 @@ RUN mkdir app
 WORKDIR app/
 COPY . .
 
-RUN python3 -m pip install --no-cache-dir -r installation/python_requirements.txt
+#RUN python3 -m pip install --no-cache-dir -r installation/python_requirements.txt
 
 # Runs the R script that handles the R Libraries installation
-RUN Rscript installation/install_dependencies.r
+#RUN Rscript installation/install_dependencies.r
+
+
+######### begin Julia
+
+RUN apt-get install -y wget
+
+RUN apt-get update -y
+
+# get the binary of the correct version
+RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.1-linux-x86_64.tar.gz
+
+# extract the tarball
+RUN tar zxvf julia-1.8.1-linux-x86_64.tar.gz
+
+# move the binary to /opt/
+RUN mv julia-1.8.1/ /opt/
+
+# links path to julia
+RUN ln -s /opt/julia-1.8.1/bin/julia /usr/local/bin/julia
+
+# install packages
+RUN julia installation/packages.jl
+
+# start the julia environment on start-up
+RUN julia -e 'using Pkg; Pkg.activate(".")'
+
+######### end julia
+
 
 RUN apt-get autoremove -y && apt-get remove -y wget
 
