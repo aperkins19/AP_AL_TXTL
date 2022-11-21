@@ -1,7 +1,7 @@
-import xgboost
+from scripts.xgbst.xgboost_funcs import xgboost_define_model
+from scripts.xgbst.xgboost_funcs import xgboost_fit
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error
 
 import pandas as pd
 import os
@@ -35,26 +35,20 @@ y = data.loc[:, "Modelled Final Protein"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.2)
 
-model = xgboost.XGBRegressor(objective='reg:squarederror',
-                            learning_rate=0.01,
-                            seed=578)
+params = {
+    # Parameters that we are going to tune.
+    'max_depth':6,
+    'min_child_weight': 1,
+    "learning_rate":.3,
+    'subsample': 1,
+    'colsample_bytree': 1,
+    # Other parameters
+    'objective':'reg:squarederror',
+}
 
-model.fit(X_train, y_train,
-            eval_set=[(X_train, y_train), (X_test, y_test)],
-            verbose=False)
+model = xgboost_define_model(params)
 
-#fi = pd.DataFrame(
-#                data=model.feature_importances_,
-#                index=model.feature_names_in_,
-#                columns=["importance"]
-#                )
-
-
-#fi_plot =fi.sort_values("importance").plot("barh", title="importance")
-
-eval_preds = model.predict(X_test)
-
-mae = mean_absolute_error(y_test, eval_preds)
+mae = xgboost_fit(model, X_train, y_train, X_test, y_test)
 
 print("MAE: " +str(mae))
 
@@ -69,11 +63,6 @@ x_pred['Modelled Final Protein'] = data.loc[-100:, "Modelled Final Protein"]
 
 print(x_pred[["xgb preds", "Modelled Final Protein"]])
 
-print("test")
-
-print(x_pred.info)
-
-print("test")
 
 def x_preds_plot(df, save_path):
 
@@ -86,7 +75,7 @@ def x_preds_plot(df, save_path):
     ax.plot([0, 500], [0, 500], linewidth=2, c ="r")
     #ax.set_xticks(ticks= [0, 4, 9], labels= [1,5, 10], fontsize = fontsize )
     #ax.set_yticks(ticks= [0, 250, 500], labels= [0, 250, 500], fontsize = fontsize )
-    
+    ax.text(-5, 335, 'xgb preds = Modelled Final Protein', color = "r", fontsize = 22)
     ax.set_xlabel("xgb preds", fontsize = fontsize)
     ax.set_ylabel("Modelled Final Protein", fontsize = fontsize)
 
