@@ -2,7 +2,49 @@ using Pkg
 
 dependencies = [
     "IJulia",
-    "Genie"
+    "Sundials",
+    "Plots",
+    "DataFrames",
+    "OrderedCollections",
+    "DelimitedFiles",
+    "CSV",
+    "JSON",
+    "XLSX",
+    "Interpolations",
+    "DifferentialEquations",
+    "ProgressBars",
+    "Statistics",
+    "DiffEqFlux",
+    "DiffEqParamEstim",
+    "BlackBoxOptim",
+    "Flux",
+    "RecursiveArrayTools",
+    "Optim",
+    "PyCall",
+    "PyPlot",
+    "Colors",
+    "GraphPlot",
+    "LightGraphs",
+    "BSON",
+    "CUDA",
+    "Cairo",
+    "DataDrivenDiffEq",
+    "DiffEqBayes",
+    "DiffEqSensitivity",
+    "Distributions",
+    "Gadfly",
+    "HDF5",
+    "LinearAlgebra",
+    "LsqFit",
+    "MLDatasets",
+    "Metrics",
+    "ModelingToolkit",
+    "OrdinaryDiffEq",
+    "StatsPlots",
+    "Turing",
+    "TerminalLoggers"
+
 ]
 
 Pkg.add(dependencies)
+#Pkg.precompile()

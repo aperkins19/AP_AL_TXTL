@@ -119,7 +119,7 @@ RUN python3 -m pip install --no-cache-dir jupyter
 # Pin jedi; see https://github.com/ipython/ipython/issues/12740
 
 
-RUN python3 -m pip install --no-cache-dir jupyter_http_over_ws ipykernel==5.1.1 nbformat==4.4.0 jedi==0.17.2
+RUN python3 -m pip install jupyter_http_over_ws ipykernel==5.1.1 nbformat==4.4.0 jedi==0.17.2
 
 RUN jupyter serverextension enable --py jupyter_http_over_ws
 
@@ -129,7 +129,7 @@ RUN mkdir app
 WORKDIR app/
 COPY . .
 
-RUN python3 -m pip install --no-cache-dir -r installation/python_requirements.txt
+RUN python3 -m pip install -r installation/python_requirements.txt
 
 # Runs the R script that handles the R Libraries installation
 RUN Rscript installation/install_dependencies.r
@@ -142,22 +142,24 @@ RUN apt-get install -y wget
 RUN apt-get update -y
 
 # get the binary of the correct version
-RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.1-linux-x86_64.tar.gz
-
+#RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.1-linux-x86_64.tar.gz
+RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.5/julia-1.5.3-linux-x86_64.tar.gz
 # extract the tarball
-RUN tar zxvf julia-1.8.1-linux-x86_64.tar.gz
+RUN tar zxvf julia-1.5.3-linux-x86_64.tar.gz
 
 # move the binary to /opt/
-RUN mv julia-1.8.1/ /opt/
+RUN mv julia-1.5.3/ /opt/
 
 # links path to julia
-RUN ln -s /opt/julia-1.8.1/bin/julia /usr/local/bin/julia
+RUN ln -s /opt/julia-1.5.3/bin/julia /usr/local/bin/julia
 
 # install packages
-RUN julia installation/packages.jl
+#RUN julia installation/packages.jl
 
 # start the julia environment on start-up
-RUN julia -e 'using Pkg; Pkg.activate(".")'
+#RUN julia -e 'using Pkg; Pkg.activate(".")'
+# activate the manifest
+#RUN julia -e 'using Pkg; Pkg.instantiate'
 
 ######### end julia
 
