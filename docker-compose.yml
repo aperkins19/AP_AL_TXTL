@@ -12,12 +12,12 @@ services:
 
 
   horvath:
-    build: ./horvath/.
-    image: julia_horvath_img
+    image: nadanai263/nllab-julia:005
     container_name: julia_horvath_ctnr
     volumes:
       - ./horvath:/app
     ports:
       - 5000:5000
+    tty: true
     depends_on:
       - active_learning
