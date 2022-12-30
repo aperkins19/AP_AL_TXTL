@@ -1,3 +1,3 @@
-#! /bin/bash
+#!/bin/sh
 
-echo "script runs"
+echo "Enter a number"

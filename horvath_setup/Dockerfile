@@ -1,3 +1,9 @@
 FROM alpine:3.14
 
-ENTRYPOINT /my-script.sh /bin/bash
+RUN mkdir script/
+WORKDIR script/
+COPY . .
+
+RUN chmod +x /script/environment_activation.sh
+
+RUN "/script/environment_activation.sh"
