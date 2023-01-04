@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  active_learning:
+    build: ./active_learning/.
+    image: al_txtl_gpu_img
+    container_name: al_txtl_gpu_cntr
+    ports:
+      - 8882:8882
+    volumes:
+      - ./active_learning:/app
+
+
+  horvath:
+    image: nadanai263/nllab-julia:005
+    container_name: julia_horvath_ctnr
+    volumes:
+      - ./horvath:/app
+    ports:
+      - 5000:5000
+    tty: true
+    depends_on:
+      - active_learning
+
+  horvath_activation:
+    build: ./horvath_setup/.
+    image: horvath_activation_img
+    container_name: horvath_activation_ctnr
+    volumes:
+      - ./horvath_setup:/script
+    ports: 
+      - 5001:5001
+    tty: true
+    depends_on:
+      - horvath
