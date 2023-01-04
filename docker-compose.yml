@@ -6,7 +6,7 @@ services:
     image: al_txtl_gpu_img
     container_name: al_txtl_gpu_cntr
     ports:
-      - 8882:8882
+      - 8882:8888
     volumes:
       - ./active_learning:/app
 
@@ -21,15 +21,3 @@ services:
     tty: true
     depends_on:
       - active_learning
-
-  horvath_activation:
-    build: ./horvath_setup/.
-    image: horvath_activation_img
-    container_name: horvath_activation_ctnr
-    volumes:
-      - ./horvath_setup:/script
-    ports: 
-      - 5001:5001
-    tty: true
-    depends_on:
-      - horvath
