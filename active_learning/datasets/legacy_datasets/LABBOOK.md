@@ -40,7 +40,7 @@
 
     Therefore it is the fold improvement.
 
-    **I have asked Olivier to provide the raw data files so the delta FEU can be generated**
+    **I have asked Olivier to provide the raw data files so the delta FEU can be generated: Olivier hasn't responded. Will contact Jean-Loup.**
 
   * Banks "Yield": delta FEU between the peak RFU and the RFU at t = 0 for the same composition, blank subtracted.
 
